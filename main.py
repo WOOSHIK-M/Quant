@@ -1,5 +1,7 @@
 import click
 
+from src.client import UpbitAccount
+
 
 @click.group()
 def main():
@@ -10,7 +12,7 @@ def main():
 @click.option("--dummy", type=str, default="", help="Dummy argument.")
 def run(dummy: str) -> None:
     """Run."""
-    print(dummy)
+    UpbitAccount
 
 
 if __name__ == "__main__":
