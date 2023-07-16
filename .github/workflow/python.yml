@@ -1,0 +1,31 @@
+name: "Repo CI] Python Code"
+
+on:
+  pull_request:
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install setuptools
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools
+
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          miniconda-version: "latest"
+          auto-update-conda: true
+          python-version: "3.10.11"
+          channels: conda-forge, defaults
+
+      - name: Run pre-commit
+        shell: bash -l {0}
+        run: |
+          make init
+          make pre-commit-all
