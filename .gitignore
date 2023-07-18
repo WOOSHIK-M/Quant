@@ -1,14 +1,6 @@
-# id keys
-# Example (id.py) :
-#
-#
-# from dataclasses import dataclass
-#
-# @dataclass
-# class PersonalKeys:
-#     access_key: str = ""
-#     secret_key: str = ""
-id.py
-
 # python
 __pycache__
+
+# user directories or files
+id.py
+*.png
