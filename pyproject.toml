@@ -6,6 +6,7 @@ authors = ["Authors"]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
+pyjwt = "^2.7.0"
 
 [tool.poetry.dev-dependencies]
 black = "22.1.0"

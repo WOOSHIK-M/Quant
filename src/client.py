@@ -6,7 +6,7 @@ from typing import Any
 import jwt
 import requests
 
-from src.ID import PersonalKeys
+from id import PersonalKeys
 
 UPBIT_OPEN_API_SERVER_URI = "https://api.upbit.com/v1/"
 
