@@ -1,6 +1,6 @@
 import click
 
-from src.client import UpbitAccount
+from src.dashboard import DashBoard
 
 
 @click.group()
@@ -12,7 +12,7 @@ def main():
 @click.option("--dummy", type=str, default="", help="Dummy argument.")
 def run(dummy: str) -> None:
     """Run."""
-    UpbitAccount
+    DashBoard().run()
 
 
 if __name__ == "__main__":

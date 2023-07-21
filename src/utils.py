@@ -11,7 +11,7 @@ def draw_ohclv(data: pd.DataFrame) -> go.Figure:
         shared_xaxes=True,
         vertical_spacing=0.1,
         subplot_titles=("Chart", "Volume"),
-        row_heights=[0.7, 0.3],
+        row_heights=[0.8, 0.2],
     )
 
     # draw ohcl

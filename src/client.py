@@ -7,11 +7,8 @@ from typing import Any
 
 import jwt
 import pandas as pd
-import plotly.graph_objects as go
 import requests
-from dash import Dash, Input, Output, dcc, html
 
-import src.utils as utils
 from id import PersonalKeys
 from src.structure import Market
 
@@ -80,7 +77,7 @@ class UpbitAccount(UrlClient):
         return info
 
 
-class UpbitBackTester(UrlClient):
+class UpbitClient(UrlClient):
     """Do backtesting."""
 
     # https://docs.upbit.com/reference/%EB%A7%88%EC%BC%93-%EC%BD%94%EB%93%9C-%EC%A1%B0%ED%9A%8C
@@ -90,11 +87,7 @@ class UpbitBackTester(UrlClient):
 
     def __init__(self) -> None:
         """Initialize."""
-
         self.markets = self._get_markets()
-        self._cache = dict()
-
-        self._make_dashboard()
 
     def _get_markets(self) -> dict[str, Market]:
         """Get all available market codes.
@@ -107,7 +100,7 @@ class UpbitBackTester(UrlClient):
         markets = self._get(url=url)
         return {market["market"]: Market(**market) for market in markets}
 
-    def _get_day_candles(
+    def get_day_candles(
         self,
         market_code: str = "KRW-BTC",
         to: str = None,
@@ -143,52 +136,3 @@ class UpbitBackTester(UrlClient):
             # api only allow 30 times for each second
             time.sleep(0.05)
         return pd.DataFrame.from_dict(data)
-
-    def _make_dashboard(self) -> None:
-        """Make a dashboard for back-testing."""
-        database = {str(m): m.market for m in self.markets.values()}
-        options = list(database.keys())
-
-        app = Dash(__name__)
-        app.layout = html.Div(
-            [
-                # draw ohclv chart
-                html.Div(children=[dcc.Graph(id="ohclv_graph")], style={"padding": 10, "flex": 10}),
-                # draw options
-                html.Div(
-                    children=[
-                        # select coins
-                        html.Label("Market codes"),
-                        dcc.Dropdown(id="market", options=options, value=options[0]),
-                        # time interval
-                        html.Br(),
-                        html.Label("Count"),
-                        dcc.Dropdown(id="count", options=options, value=options[0]),
-                    ],
-                    style={"padding": 10, "flex": 2},
-                ),
-            ],
-            style={"display": "flex", "flex-direction": "row"},
-        )
-
-        @app.callback(
-            Output(component_id="ohclv_graph", component_property="figure"),
-            Input(component_id="market", component_property="value"),
-            Input(component_id="count", component_property="value"),
-        )
-        def _update_ohclv(market_name: str, count: str) -> go.Figure:
-            """."""
-            market_code = database[market_name]
-
-            # if it is not in cache, get candles
-            if market_code not in self._cache:
-                print("hi")
-                data = self._get_day_candles(market_code=market_code)
-                self._cache[market_code] = data
-            data = self._cache[market_code]
-            return utils.draw_ohclv(data)
-
-        app.run_server(debug=True)
-
-
-UpbitBackTester()
