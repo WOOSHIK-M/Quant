@@ -1,4 +1,6 @@
+import datetime
 import json
+import time
 import uuid
 from abc import ABCMeta
 from typing import Any
@@ -90,6 +92,8 @@ class UpbitBackTester(UrlClient):
         """Initialize."""
 
         self.markets = self._get_markets()
+        self._cache = dict()
+
         self._make_dashboard()
 
     def _get_markets(self) -> dict[str, Market]:
@@ -106,7 +110,6 @@ class UpbitBackTester(UrlClient):
     def _get_day_candles(
         self,
         market_code: str = "KRW-BTC",
-        # TODO : What format of this?
         to: str = None,
         count: int = 200,
     ) -> pd.DataFrame:
@@ -117,19 +120,29 @@ class UpbitBackTester(UrlClient):
             to: The last candle time(exclusive).
                 Get the recent history if it is None.
                 It has ISO8061 format(yyyy-MM-dd`T`HH:mm:ss`Z` or yyyy-MM-dd).
-            count: The number of candles(max: 200).
+            count: The number of candles.
         """
         assert market_code in self.markets, "Unknown market code..."
-        assert count < 201, "The maximum of count is 200..."
 
         url = self.OHLCV_URL + "/days"
 
         headers = {"accept": "application/json"}
         params = {"market": market_code, "count": count}
-        if to is not None:
-            params["to"] = to
-        candles = self._get(url=url, headers=headers, params=params)
-        return pd.DataFrame.from_dict(candles)
+
+        data = []
+        to: datetime.datetime = datetime.datetime.now()
+        while True:
+            params["to"] = to.strftime("%Y-%m-%d %H:%M:%S")
+            candles = self._get(url=url, headers=headers, params=params)
+            if not candles:
+                break
+
+            data += candles
+            to -= datetime.timedelta(days=count)
+
+            # api only allow 30 times for each second
+            time.sleep(0.05)
+        return pd.DataFrame.from_dict(data)
 
     def _make_dashboard(self) -> None:
         """Make a dashboard for back-testing."""
@@ -166,7 +179,13 @@ class UpbitBackTester(UrlClient):
         def _update_ohclv(market_name: str, count: str) -> go.Figure:
             """."""
             market_code = database[market_name]
-            data = self._get_day_candles(market_code=market_code)
+
+            # if it is not in cache, get candles
+            if market_code not in self._cache:
+                print("hi")
+                data = self._get_day_candles(market_code=market_code)
+                self._cache[market_code] = data
+            data = self._cache[market_code]
             return utils.draw_ohclv(data)
 
         app.run_server(debug=True)
