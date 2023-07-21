@@ -10,6 +10,7 @@ pyjwt = "^2.7.0"
 dash = "^2.11.1"
 dash-bootstrap-components = "^1.4.2"
 dash-mantine-components = "^0.12.1"
+pandas = "^2.0.3"
 
 [tool.poetry.dev-dependencies]
 black = "22.1.0"
