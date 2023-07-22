@@ -1,16 +1,18 @@
-# Default Project Template
+# Auto-trading project
 
-Make a poetry project.
+It uses [Upbit API](https://docs.upbit.com/docs).
 
-### Pre-requisites
-
-1. Type a project name in `project.toml`
-1. Type authors in `project.toml`
-
-### How to use?
+### Installation
 
 ```bash
 # create conda env or pyenv first
 # it supports the python versions 3.9 or 3.10
 > make init
+```
+
+### How to use?
+
+```bash
+# use dashboard
+> python main.py run --dashboard
 ```
