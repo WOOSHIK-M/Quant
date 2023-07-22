@@ -6,6 +6,7 @@ import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 import plotly.graph_objects as go
 from dash import Dash, Input, Output, dcc, html
+from dash.development.base_component import Component
 
 import src.utils as utils
 from src.client import UpbitClient
@@ -40,21 +41,15 @@ class ChartHandler(Page):
 
         super().__init__(app)
 
-    def show(self) -> html.Div:
+    def show(self) -> Component:
         """."""
-        options = list(self.d_markets.keys())
         contents = dbc.Row(
             children=[
                 dbc.Col(children=html.Div(dcc.Graph(id="ohclv_graph")), width=10),
                 dbc.Col(
                     children=[
-                        # select market code
-                        html.Label("Market codes"),
-                        dcc.Dropdown(id="market", options=options, value=options[0]),
-                        # date picker
-                        html.Br(),
-                        html.Label("Datetime"),
-                        self._get_date_picker(),
+                        *self._get_dropdown_block(),
+                        *self._get_date_picker_block(),
                     ],
                     width=2,
                 ),
@@ -62,34 +57,48 @@ class ChartHandler(Page):
         )
         return contents
 
-    def _get_date_picker(self) -> html.Div:
-        """Get a date picker."""
+    def _get_dropdown_block(self) -> list[Component]:
+        """Build dropdown block to select another options."""
+        options = list(self.d_markets.keys())
+        return [
+            html.Label("Market codes"),
+            dcc.Dropdown(id="market", options=options, value=options[0]),
+        ]
+
+    def _get_date_picker_block(self) -> list[Component]:
+        """Build date picker."""
         today = datetime.datetime.today()
-        return dmc.DateRangePicker(
+        date_picker = dmc.DateRangePicker(
             id="date-range-picker",
             description="description.",
             minDate=datetime.date(1995, 3, 5),
             value=[today - datetime.timedelta(days=200), today],
         )
-
-    def _get_ohclv_figure(self, market_name: str) -> go.Figure:
-        """Get ohclv chart."""
-        market_code = self.d_markets[market_name]
-
-        # if it is not in cache, get candles
-        if market_code not in self._cache:
-            data = self.client.get_day_candles(market_code=market_code)
-            self._cache[market_code] = data
-        data = self._cache[market_code]
-        return utils.draw_ohclv(data)
+        return [
+            html.Br(),
+            html.Label("Datetime"),
+            date_picker,
+        ]
 
     def _call_rendering_function(self, app: Dash) -> None:
         """Render ohlcv chart."""
 
+        def _get_ohclv_figure(market_name: str) -> go.Figure:
+            """Get ohclv chart."""
+            market_code = self.d_markets[market_name]
+
+            # if it is not in cache, get candles
+            if market_code not in self._cache:
+                data = self.client.get_day_candles(market_code=market_code)
+                self._cache[market_code] = data
+            data = self._cache[market_code]
+            return utils.draw_ohclv(data)
+
         @app.callback(
             Output(component_id="ohclv_graph", component_property="figure"),
             Input(component_id="market", component_property="value"),
+            Input(component_id="date-range-picker", component_property="value"),
         )
-        def _render_ohclv_chart(market_name: str) -> go.Figure:
+        def _render_ohclv_chart(market_name: str, date: str) -> go.Figure:
             """Render chart of the given market name."""
-            return self._get_ohclv_figure(market_name)
+            return _get_ohclv_figure(market_name)

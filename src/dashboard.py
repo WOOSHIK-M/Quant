@@ -3,7 +3,10 @@ from dash import Dash, Input, Output, dcc, html
 
 from src.dashboard_pages import ChartHandler
 
-app = Dash(external_stylesheets=[dbc.themes.LUX])
+app = Dash(
+    external_stylesheets=[dbc.themes.LUX],
+    suppress_callback_exceptions=True,
+)
 
 
 class DashBoard:
