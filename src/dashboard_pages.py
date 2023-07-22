@@ -46,7 +46,9 @@ class ChartHandler(Page):
                 dbc.Col(children=html.Div(dcc.Graph(id="ohclv_graph")), width=10),
                 dbc.Col(
                     children=[
-                        *self._get_dropdown_block(),
+                        *self._select_market_codes(),
+                        html.Br(),
+                        *self._select_candle_format(),
                     ],
                     width=2,
                 ),
@@ -54,12 +56,26 @@ class ChartHandler(Page):
         )
         return contents
 
-    def _get_dropdown_block(self) -> list[Component]:
-        """Build dropdown block to select another options."""
+    def _select_market_codes(self) -> list[Component]:
+        """Build a dropdown button to select another option."""
         options = list(self.d_markets.keys())
         return [
             html.Label("Market codes"),
-            dcc.Dropdown(id="market", options=options, value=options[0]),
+            dcc.Dropdown(id="dropdown-market-code", options=options, value=options[0]),
+        ]
+
+    def _select_candle_format(self) -> list[Component]:
+        """Build a dropdown button to select another candler format."""
+        assert self.client.UNIT_OPTIONS[0] == "minutes"
+
+        units = self.client.UNIT_OPTIONS
+        options = [f"{units[0]}-{sub_unit}" for sub_unit in self.client.SUB_UNIT_OPTIONS]
+        options = sorted(options, key=lambda x: int(x.split("-")[1]), reverse=True)
+
+        options = units[1:] + options
+        return [
+            html.Label("Candle Size"),
+            dcc.Dropdown(id="dropdown-format", options=options, value=options[0]),
         ]
 
     def _call_rendering_function(self, app: Dash) -> None:
@@ -67,23 +83,37 @@ class ChartHandler(Page):
 
         def _get_ohclv_figure(
             market_name: str,
+            candlestick_info: str,
         ) -> go.Figure:
             """Get ohclv chart."""
             market_code = self.d_markets[market_name]
 
+            if "-" in candlestick_info:
+                unit, sub_unit = candlestick_info.split("-")
+                sub_unit = int(sub_unit)
+            else:
+                unit, sub_unit = candlestick_info, 1
+
             # if it is not in cache, get candles
-            if market_code not in self._cache:
-                data = self.client.get_day_candles(market_code=market_code)
-                self._cache[market_code] = data
-            data = self._cache[market_code]
+            key = (market_code, unit, sub_unit)
+            if key not in self._cache:
+                data = self.client.get_candlesticks(
+                    market_code=market_code,
+                    unit=unit,
+                    sub_unit=sub_unit,
+                )
+                self._cache[key] = data
+            data = self._cache[key]
             return utils.draw_ohclv(data)
 
         @app.callback(
             Output(component_id="ohclv_graph", component_property="figure"),
-            Input(component_id="market", component_property="value"),
+            Input(component_id="dropdown-market-code", component_property="value"),
+            Input(component_id="dropdown-format", component_property="value"),
         )
         def _render_ohclv_chart(
             market_name: str,
+            candlestick_info: str,
         ) -> go.Figure:
             """Render chart of the given market name."""
-            return _get_ohclv_figure(market_name)
+            return _get_ohclv_figure(market_name, candlestick_info)

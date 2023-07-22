@@ -78,12 +78,17 @@ class UpbitAccount(UrlClient):
 
 
 class UpbitClient(UrlClient):
-    """Do backtesting."""
+    """Do backtesting.
 
-    # https://docs.upbit.com/reference/%EB%A7%88%EC%BC%93-%EC%BD%94%EB%93%9C-%EC%A1%B0%ED%9A%8C
+    References:
+        https://docs.upbit.com/reference
+    """
+
     MARKET_URL = UPBIT_OPEN_API_SERVER_URI + "/market"
-    # https://docs.upbit.com/reference/%EB%B6%84minute-%EC%BA%94%EB%93%A4-1
     OHLCV_URL = UPBIT_OPEN_API_SERVER_URI + "/candles"
+
+    UNIT_OPTIONS = ["minutes", "days", "weeks"]
+    SUB_UNIT_OPTIONS = [1, 3, 5, 15, 10, 30, 60, 240]
 
     def __init__(self) -> None:
         """Initialize."""
@@ -100,7 +105,7 @@ class UpbitClient(UrlClient):
         markets = self._get(url=url)
         return {market["market"]: Market(**market) for market in markets}
 
-    def get_candles(
+    def get_candlesticks(
         self,
         unit: str = "days",
         market_code: str = "KRW-BTC",
@@ -110,8 +115,9 @@ class UpbitClient(UrlClient):
 
         It always requests all candle data of the given market code.
         """
-        assert unit in ["minutes", "days", "weeks"], f"Unknown unit [{unit}]"
-        assert market_code in self.markets, f"Unknown market code {market_code}"
+        assert unit in self.UNIT_OPTIONS, f"Unknown unit [{unit}]"
+        assert sub_unit in self.SUB_UNIT_OPTIONS, f"Unknown sub_unit [{sub_unit}]"
+        assert market_code in self.markets, f"Unknown market code [{market_code}]"
 
         # make url
         url = self.OHLCV_URL + f"/{unit}"
@@ -141,7 +147,6 @@ class UpbitClient(UrlClient):
                 break
 
             data += candles
-            print(len(data), to_date)
             to_date = to_date - datetime.timedelta(seconds=params["count"] * interval)
 
             # api only allow 30 times for each second
