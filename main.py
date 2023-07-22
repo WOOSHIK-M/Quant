@@ -9,10 +9,11 @@ def main():
 
 
 @click.command()
-@click.option("--dummy", type=str, default="", help="Dummy argument.")
-def run(dummy: str) -> None:
+@click.option("--dashboard", is_flag=True, default=False, help="Use dashboard.")
+def run(dashboard: bool) -> None:
     """Run."""
-    DashBoard().run()
+    if dashboard:
+        DashBoard().run()
 
 
 if __name__ == "__main__":
