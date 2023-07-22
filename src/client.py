@@ -100,10 +100,46 @@ class UpbitClient(UrlClient):
         markets = self._get(url=url)
         return {market["market"]: Market(**market) for market in markets}
 
+    def get_minute_candles(
+        self,
+        market_code: str = "KRW-BTC",
+        unit: int = 240,
+        count: int = 200,
+    ) -> pd.DataFrame:
+        """."""
+        assert market_code in self.markets, "Unknown market code..."
+        assert unit in [1, 3, 5, 15, 10, 30, 60, 240]
+
+        url = self.OHLCV_URL + f"/minutes/{unit}"
+
+        headers = {"accept": "application/json"}
+        params = {"market": market_code}
+
+        from_date = datetime.datetime.strptime("1995-03-05", "%Y-%m-%d")
+        to_date = datetime.datetime.today()
+
+        data = []
+        while to_date > from_date:
+            params = {
+                "market": market_code,
+                "to": to_date.strftime("%Y-%m-%d %H:%M:%S"),
+                "count": min(count, (to_date - from_date).seconds * 60 * unit),
+            }
+            candles = self._get(url=url, headers=headers, params=params)
+
+            if not candles:
+                break
+
+            data += candles
+            to_date = max(from_date, to_date - datetime.timedelta(seconds=count * 60 * unit))
+
+            # api only allow 30 times for each second
+            time.sleep(0.05)
+        return pd.DataFrame.from_dict(data)
+
     def get_day_candles(
         self,
         market_code: str = "KRW-BTC",
-        to: str = None,
         count: int = 200,
     ) -> pd.DataFrame:
         """Get candles on a daily basis.
@@ -120,19 +156,26 @@ class UpbitClient(UrlClient):
         url = self.OHLCV_URL + "/days"
 
         headers = {"accept": "application/json"}
-        params = {"market": market_code, "count": count}
+        params = {"market": market_code}
+
+        from_date = datetime.datetime.strptime("1995-03-05", "%Y-%m-%d")
+        to_date = datetime.datetime.today()
 
         data = []
-        to: datetime.datetime = datetime.datetime.now()
-        while True:
-            params["to"] = to.strftime("%Y-%m-%d %H:%M:%S")
+        while to_date > from_date:
+            params = {
+                "market": market_code,
+                "to": to_date.strftime("%Y-%m-%d %H:%M:%S"),
+                "count": min(count, (to_date - from_date).days),
+            }
             candles = self._get(url=url, headers=headers, params=params)
+
             if not candles:
                 break
 
             data += candles
-            to -= datetime.timedelta(days=count)
+            to_date = max(from_date, to_date - datetime.timedelta(days=count))
 
             # api only allow 30 times for each second
-            time.sleep(0.05)
+            time.sleep(0.04)
         return pd.DataFrame.from_dict(data)

@@ -1,9 +1,7 @@
-import datetime
 from abc import ABCMeta, abstractmethod
 from typing import Any
 
 import dash_bootstrap_components as dbc
-import dash_mantine_components as dmc
 import plotly.graph_objects as go
 from dash import Dash, Input, Output, dcc, html
 from dash.development.base_component import Component
@@ -49,7 +47,6 @@ class ChartHandler(Page):
                 dbc.Col(
                     children=[
                         *self._get_dropdown_block(),
-                        *self._get_date_picker_block(),
                     ],
                     width=2,
                 ),
@@ -65,25 +62,12 @@ class ChartHandler(Page):
             dcc.Dropdown(id="market", options=options, value=options[0]),
         ]
 
-    def _get_date_picker_block(self) -> list[Component]:
-        """Build date picker."""
-        today = datetime.datetime.today()
-        date_picker = dmc.DateRangePicker(
-            id="date-range-picker",
-            description="description.",
-            minDate=datetime.date(1995, 3, 5),
-            value=[today - datetime.timedelta(days=200), today],
-        )
-        return [
-            html.Br(),
-            html.Label("Datetime"),
-            date_picker,
-        ]
-
     def _call_rendering_function(self, app: Dash) -> None:
         """Render ohlcv chart."""
 
-        def _get_ohclv_figure(market_name: str) -> go.Figure:
+        def _get_ohclv_figure(
+            market_name: str,
+        ) -> go.Figure:
             """Get ohclv chart."""
             market_code = self.d_markets[market_name]
 
@@ -97,8 +81,9 @@ class ChartHandler(Page):
         @app.callback(
             Output(component_id="ohclv_graph", component_property="figure"),
             Input(component_id="market", component_property="value"),
-            Input(component_id="date-range-picker", component_property="value"),
         )
-        def _render_ohclv_chart(market_name: str, date: str) -> go.Figure:
+        def _render_ohclv_chart(
+            market_name: str,
+        ) -> go.Figure:
             """Render chart of the given market name."""
             return _get_ohclv_figure(market_name)

@@ -12,3 +12,10 @@ class Market:
     def __repr__(self) -> str:
         """Get representation of this."""
         return f"{self.korean_name} ({self.english_name}, {self.market})"
+
+
+@dataclass
+class ChartProperty:
+    """."""
+
+    pass
