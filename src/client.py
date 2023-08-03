@@ -9,21 +9,19 @@ import jwt
 import pandas as pd
 import requests
 
-from id import PersonalKeys
+try:
+    from api_keys import PersonalKeys
+
+    mykeys = PersonalKeys()
+except Exception:
+    from api_keys import example
+
+    print("Please make a id.py first.")
+    print(example)
+
 from src.structure import Market
 
 UPBIT_OPEN_API_SERVER_URI = "https://api.upbit.com/v1"
-
-
-# Example (id.py) :
-#
-# from dataclasses import dataclass
-#
-# @dataclass
-# class PersonalKeys:
-#     access_key: str = ""
-#     secret_key: str = ""
-mykeys = PersonalKeys()
 
 
 class UrlClient(metaclass=ABCMeta):
