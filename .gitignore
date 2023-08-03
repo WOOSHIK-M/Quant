@@ -2,5 +2,5 @@
 __pycache__
 
 # user directories or files
-id.py
+api_keys.py
 *.png
