@@ -14,10 +14,7 @@ try:
 
     mykeys = PersonalKeys()
 except Exception:
-    from api_keys import example
-
     print("Please make a id.py first.")
-    print(example)
 
 from src.structure import Market
 

@@ -10,6 +10,19 @@ It uses [Upbit API](https://docs.upbit.com/docs).
 > make init
 ```
 
+### API keys
+
+```python
+# make api data class in ./api_keys.py
+from dataclasses import dataclass
+
+
+@dataclass
+class PersonalKeys:
+    access_key: str = ""
+    secret_key: str = ""
+```
+
 ### How to use?
 
 ```bash
