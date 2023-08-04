@@ -1,8 +1,8 @@
-import datetime
 import json
 import time
 import uuid
 from abc import ABCMeta
+from datetime import datetime, timedelta
 from typing import Any
 
 import jwt
@@ -106,47 +106,77 @@ class UpbitClient(UrlClient):
         It always requests all candle data of the given market code.
         """
         chart_property = chart_property or ChartProperty()
+
         market_code = chart_property.market_code
         unit = chart_property.unit
         sub_unit = chart_property.sub_unit
+        fname = chart_property.fname
 
+        # check validation
         assert market_code in self.markets, f"Unknown market code [{market_code}]"
         assert unit in self.UNIT_OPTIONS, f"Unknown unit [{unit}]"
         assert sub_unit in self.SUB_UNIT_OPTIONS, f"Unknown sub_unit [{sub_unit}]"
 
-        # TODO : if the last day is previous, we need to reload them
-        if not chart_property.fname.is_file():
-            # make url
-            url = self.OHLCV_URL + f"/{unit}"
-            if unit == "minutes":
-                url += f"/{sub_unit}"
+        # load previous data if it exists
+        data, from_when = pd.DataFrame(), datetime.min
+        if fname.is_file():
+            data = pd.read_pickle(fname)
+            from_when = pd.to_datetime(data["candle_date_time_kst"])[0]
 
-            # calculate count interval
-            interval = 60
-            if unit == "minutes":
-                interval *= sub_unit
-            elif unit == "days":
-                interval *= 60 * 24
-            elif unit == "weeks":
-                interval *= 60 * 24 * 7
+        # request new data
+        newest_data = self._request_candle_sticks(
+            market_code=market_code,
+            unit=unit,
+            sub_unit=sub_unit,
+            from_when=from_when,
+        )
+        data = pd.concat([newest_data, data], ignore_index=True, verify_integrity=True)
 
-            # get all candle data
-            to_date = datetime.datetime.today()
+        # save the data
+        data.to_pickle(chart_property.fname)
+        return data
 
-            data = []
-            headers = {"accept": "application/json"}
-            params = {"market": market_code, "count": 200}
-            while True:
-                params["to"] = to_date.strftime("%Y-%m-%d %H:%M:%S")
-                candles = self._get(url=url, headers=headers, params=params)
+    def _request_candle_sticks(
+        self,
+        market_code: str,
+        unit: str,
+        sub_unit: int,
+        from_when: datetime,
+    ) -> pd.DataFrame:
+        """Request the candle stick data."""
+        # make url
+        url = self.OHLCV_URL + f"/{unit}"
+        if unit == "minutes":
+            url += f"/{sub_unit}"
 
-                if not candles:
-                    break
+        # calculate count interval
+        interval = 60
+        if unit == "minutes":
+            interval *= sub_unit
+        elif unit == "days":
+            interval *= 60 * 24
+        elif unit == "weeks":
+            interval *= 60 * 24 * 7
 
-                data += candles
-                to_date = to_date - datetime.timedelta(seconds=params["count"] * interval)
+        # get all candle data
+        to_date = datetime.today()
 
-                # api only allow 30 times for each second
-                time.sleep(0.05)
-            pd.DataFrame.from_dict(data).to_pickle(chart_property.fname)
-        return pd.read_pickle(chart_property.fname)
+        data = []
+        headers = {"accept": "application/json"}
+        params = {"market": market_code, "count": 200}
+        while True:
+            params["to"] = to_date.strftime("%Y-%m-%d %H:%M:%S")
+            candles = self._get(url=url, headers=headers, params=params)
+            data += candles
+
+            if not candles or from_when >= datetime.fromisoformat(
+                candles[-1]["candle_date_time_kst"]
+            ):
+                break
+
+            # api only allow 30 times for each second
+            time.sleep(0.05)
+            to_date = to_date - timedelta(seconds=params["count"] * interval)
+
+        data = pd.DataFrame.from_dict(data)
+        return data[pd.to_datetime(data["candle_date_time_kst"]) > from_when]
