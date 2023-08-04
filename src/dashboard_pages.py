@@ -1,7 +1,9 @@
 from abc import ABCMeta, abstractmethod
+from datetime import date, timedelta
 from typing import Any
 
 import dash_bootstrap_components as dbc
+import pandas as pd
 import plotly.graph_objects as go
 from dash import Dash, Input, Output, State, dcc, html
 from dash.development.base_component import Component
@@ -60,9 +62,8 @@ class ChartHandler(Page):
         functions = dbc.Col(
             children=[
                 *self._select_market_codes(),
-                html.Br(),
                 *self._select_candle_format(),
-                html.Br(),
+                *self._date_picker(),
                 *self._load_button(),
             ],
             width=width,
@@ -75,6 +76,7 @@ class ChartHandler(Page):
         return [
             html.Label("Market codes"),
             dcc.Dropdown(id="input-market-code", options=options, value=options[0]),
+            html.Br(),
         ]
 
     def _select_candle_format(self) -> list[Component]:
@@ -89,7 +91,24 @@ class ChartHandler(Page):
         return [
             html.Label("Candle Size"),
             dcc.Dropdown(id="input-candle-size", options=options, value=options[0]),
+            html.Br(),
         ]
+
+    def _date_picker(self, day_interval: int = 200) -> Component:
+        """Get a date picker."""
+        data = self.client.get_candlesticks()
+        dates = pd.to_datetime(data["candle_date_time_kst"])
+
+        today = date.today()
+        date_picker = dcc.DatePickerRange(
+            id="date-picker",
+            display_format="YYYY-MM-DD",
+            min_date_allowed=dates.min().date(),
+            max_date_allowed=today,
+            start_date=today - timedelta(days=day_interval),
+            end_date=today,
+        )
+        return [html.Label("Dates"), html.Br(), date_picker, html.Br(), html.Br()]
 
     def _load_button(self) -> list[Component]:
         """."""
@@ -105,8 +124,15 @@ class ChartHandler(Page):
         self,
         market_name: str,
         candle_size: str,
+        start_date: str,
+        end_date: str,
     ) -> go.Figure:
-        """Get ohclv chart."""
+        """Get ohclv chart.
+
+        Arguments:
+            start_date : "YYYY-MM-DD"
+            end_date : "YYYY-MM-DD"
+        """
         market_code = self.d_markets[market_name]
 
         if "-" in candle_size:
@@ -125,7 +151,7 @@ class ChartHandler(Page):
             )
             self._cache[key] = data
         data = self._cache[key]
-        return utils.draw_ohclv(data)
+        return utils.draw_ohclv(data, start_date=start_date, end_date=end_date)
 
     def _call_rendering_function(self, app: Dash) -> None:
         """Render ohlcv chart."""
@@ -136,21 +162,21 @@ class ChartHandler(Page):
             Input("load-button-state", "n_clicks"),
             State("input-market-code", "value"),
             State("input-candle-size", "value"),
+            State("date-picker", "start_date"),
+            State("date-picker", "end_date"),
         )
         def _render_ohclv_chart(
             n_clicks: int,
             market_name: str,
             candle_size: str,
+            start_date: str,
+            end_date: str,
         ) -> go.Figure:
             """Render chart of the given market name."""
-            fig = self._get_ohclv_figure(market_name, candle_size)
-
-            info = dcc.Markdown(
-                rf"""
-                #### INFO
-
-                * \[market\] {market_name}
-                * \[candle size\] {candle_size}
-                """
+            fig = self._get_ohclv_figure(
+                market_name=market_name,
+                candle_size=candle_size,
+                start_date=start_date,
+                end_date=end_date,
             )
-            return fig, info
+            return fig, "loaded!"
