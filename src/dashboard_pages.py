@@ -10,6 +10,7 @@ from dash.development.base_component import Component
 
 import src.utils as utils
 from src.client import UpbitClient
+from src.structure import ChartProperty
 
 
 class Page(metaclass=ABCMeta):
@@ -135,23 +136,21 @@ class ChartHandler(Page):
         """
         market_code = self.d_markets[market_name]
 
+        # unit is minutes
         if "-" in candle_size:
             unit, sub_unit = candle_size.split("-")
-            sub_unit = int(sub_unit)
-        else:
-            unit, sub_unit = candle_size, 1
-
-        # if it is not in cache, get candles
-        key = (market_code, unit, sub_unit)
-        if key not in self._cache:
-            data = self.client.get_candlesticks(
-                market_code=market_code,
-                unit=unit,
-                sub_unit=sub_unit,
+            chart_property = ChartProperty(
+                market_code=market_code, unit=unit, sub_unit=int(sub_unit)
             )
-            self._cache[key] = data
-        data = self._cache[key]
-        return utils.draw_ohclv(data, start_date=start_date, end_date=end_date)
+        # unit is days or weeks
+        else:
+            chart_property = ChartProperty(market_code=market_code, unit=candle_size)
+
+        return utils.draw_ohclv(
+            data=self.client.get_candlesticks(chart_property),
+            start_date=start_date,
+            end_date=end_date,
+        )
 
     def _call_rendering_function(self, app: Dash) -> None:
         """Render ohlcv chart."""

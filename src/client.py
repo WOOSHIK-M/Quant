@@ -16,7 +16,7 @@ try:
 except Exception:
     print("Please make a id.py first.")
 
-from src.structure import Market
+from src.structure import ChartProperty, Market
 
 UPBIT_OPEN_API_SERVER_URI = "https://api.upbit.com/v1"
 
@@ -100,50 +100,53 @@ class UpbitClient(UrlClient):
         markets = self._get(url=url)
         return {market["market"]: Market(**market) for market in markets}
 
-    def get_candlesticks(
-        self,
-        unit: str = "days",
-        market_code: str = "KRW-BTC",
-        sub_unit: int = 60,
-    ) -> pd.DataFrame:
+    def get_candlesticks(self, chart_property: ChartProperty = None) -> pd.DataFrame:
         """Get candles.
 
         It always requests all candle data of the given market code.
         """
+        chart_property = chart_property or ChartProperty()
+        market_code = chart_property.market_code
+        unit = chart_property.unit
+        sub_unit = chart_property.sub_unit
+
+        assert market_code in self.markets, f"Unknown market code [{market_code}]"
         assert unit in self.UNIT_OPTIONS, f"Unknown unit [{unit}]"
         assert sub_unit in self.SUB_UNIT_OPTIONS, f"Unknown sub_unit [{sub_unit}]"
-        assert market_code in self.markets, f"Unknown market code [{market_code}]"
 
-        # make url
-        url = self.OHLCV_URL + f"/{unit}"
-        if unit == "minutes":
-            url += f"/{sub_unit}"
+        # TODO : if the last day is previous, we need to reload them
+        if not chart_property.fname.is_file():
+            # make url
+            url = self.OHLCV_URL + f"/{unit}"
+            if unit == "minutes":
+                url += f"/{sub_unit}"
 
-        # calculate count interval
-        interval = 60
-        if unit == "minutes":
-            interval *= sub_unit
-        elif unit == "days":
-            interval *= 60 * 24
-        elif unit == "weeks":
-            interval *= 60 * 24 * 7
+            # calculate count interval
+            interval = 60
+            if unit == "minutes":
+                interval *= sub_unit
+            elif unit == "days":
+                interval *= 60 * 24
+            elif unit == "weeks":
+                interval *= 60 * 24 * 7
 
-        # get all candle data
-        to_date = datetime.datetime.today()
+            # get all candle data
+            to_date = datetime.datetime.today()
 
-        data = []
-        headers = {"accept": "application/json"}
-        params = {"market": market_code, "count": 200}
-        while True:
-            params["to"] = to_date.strftime("%Y-%m-%d %H:%M:%S")
-            candles = self._get(url=url, headers=headers, params=params)
+            data = []
+            headers = {"accept": "application/json"}
+            params = {"market": market_code, "count": 200}
+            while True:
+                params["to"] = to_date.strftime("%Y-%m-%d %H:%M:%S")
+                candles = self._get(url=url, headers=headers, params=params)
 
-            if not candles:
-                break
+                if not candles:
+                    break
 
-            data += candles
-            to_date = to_date - datetime.timedelta(seconds=params["count"] * interval)
+                data += candles
+                to_date = to_date - datetime.timedelta(seconds=params["count"] * interval)
 
-            # api only allow 30 times for each second
-            time.sleep(0.05)
-        return pd.DataFrame.from_dict(data)
+                # api only allow 30 times for each second
+                time.sleep(0.05)
+            pd.DataFrame.from_dict(data).to_pickle(chart_property.fname)
+        return pd.read_pickle(chart_property.fname)

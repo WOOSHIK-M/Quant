@@ -1,6 +1,10 @@
 # python
 __pycache__
 
-# user directories or files
+
+# user directories
+data
+
+# user files
 api_keys.py
 *.png

@@ -1,4 +1,8 @@
 from dataclasses import dataclass
+from pathlib import Path
+
+DATA_PATH = Path("data")
+DATA_PATH.mkdir(exist_ok=True, parents=True)
 
 
 @dataclass
@@ -16,6 +20,13 @@ class Market:
 
 @dataclass
 class ChartProperty:
-    """."""
+    """The properties of ohclv chart."""
 
-    pass
+    market_code: str = "KRW-BTC"
+    unit: str = "days"
+    sub_unit: int = 60
+
+    @property
+    def fname(self) -> Path:
+        """Get the save file name."""
+        return DATA_PATH / f"{self.market_code}_{self.unit}_{self.sub_unit}.pkl"
