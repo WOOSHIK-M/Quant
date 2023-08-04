@@ -3,7 +3,10 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 
-def draw_ohclv(data: pd.DataFrame) -> go.Figure:
+def draw_ohclv(
+    data: pd.DataFrame,
+    moving_averages: list[int] = [5, 20, 60, 120, 200],
+) -> go.Figure:
     """Draw candle chart."""
     fig = make_subplots(
         rows=2,
@@ -27,6 +30,20 @@ def draw_ohclv(data: pd.DataFrame) -> go.Figure:
         showlegend=False,
     )
     fig.add_trace(go_ohcl, row=1, col=1)
+
+    # draw moving average
+    for moving_average in moving_averages:
+        average_prices = data["trade_price"].rolling(moving_average).mean().tolist()
+        average_prices = (
+            average_prices[moving_average:] + data["trade_price"][-moving_average:].tolist()
+        )
+        line = go.Scatter(
+            x=data["candle_date_time_kst"],
+            y=average_prices,
+            line=dict(width=3),
+            name=f"{moving_average}",
+        )
+        fig.add_trace(line, row=1, col=1)
 
     # draw volumes
     go_volumes = go.Bar(
