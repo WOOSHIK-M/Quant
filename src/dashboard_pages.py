@@ -76,7 +76,7 @@ class ChartHandler(Page):
         """Build a dropdown button to select another option."""
         options = list(self.d_markets.keys())
         return [
-            html.Label("Market codes"),
+            dcc.Markdown("##### Market codes"),
             dcc.Dropdown(id="input-market-code", options=options, value=options[0]),
             html.Br(),
         ]
@@ -91,7 +91,7 @@ class ChartHandler(Page):
 
         options = units[1:] + options
         return [
-            html.Label("Candle Size"),
+            dcc.Markdown("##### Candle Size"),
             dcc.Dropdown(id="input-candle-size", options=options, value=options[0]),
             html.Br(),
         ]
@@ -110,15 +110,22 @@ class ChartHandler(Page):
             start_date=today - timedelta(days=day_interval),
             end_date=today,
         )
-        return [html.Label("Dates"), html.Br(), date_picker, html.Br(), html.Br()]
+        return [
+            dcc.Markdown("##### Dates"),
+            date_picker,
+            html.Br(),
+            html.Br(),
+        ]
 
     def _number_of_ticks(self) -> Component:
         """Input the number of ticks to display."""
         return [
-            html.Label("# of ticks"),
-            html.Br(),
-            html.Label("tips) make it None, if you want to see from startdate."),
-            html.Br(),
+            dcc.Markdown(
+                """
+                ##### Number of ticks
+                (tips) if you want to see between dates, make it none.
+            """
+            ),
             dcc.Input(
                 id="number-of-ticks",
                 type="number",
