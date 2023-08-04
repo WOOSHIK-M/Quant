@@ -26,8 +26,8 @@ class DashBoard:
         def render_page_content(pathname):
             if pathname == "/":
                 return self.home_contents.show()
-            elif pathname == "/dummy":
-                return html.P("This is dummy page. Yay!")
+            # elif pathname == "/dummy":
+            #     return html.P("This is dummy page. Yay!")
             return html.P("404: Not found", className="text-danger")
 
         app.run_server(debug=True)
@@ -57,13 +57,13 @@ class DashBoard:
 
         sidebar = html.Div(
             [
-                html.H1("My Dashboard", className="display-6"),
+                html.H1("Upbit Dashboard", className="display-6"),
                 html.Hr(),
                 html.P("A simple sidebar with navigations.", className="lead"),
                 dbc.Nav(
                     children=[
                         dbc.NavLink("Home", href="/", active="exact"),
-                        dbc.NavLink("Dummy Page", href="/dummy", active="exact"),
+                        # dbc.NavLink("Dummy Page", href="/dummy", active="exact"),
                     ],
                     vertical=True,
                     pills=True,

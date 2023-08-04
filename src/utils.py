@@ -8,6 +8,7 @@ from plotly.subplots import make_subplots
 def draw_ohclv(
     data: pd.DataFrame,
     moving_averages: list[int] = [5, 20, 60, 120, 200],
+    n_ticks: int = None,
     start_date: date = None,
     end_date: date = None,
 ) -> go.Figure:
@@ -27,13 +28,15 @@ def draw_ohclv(
         ma_data = data["trade_price"][::-1].rolling(window=moving_average, min_periods=1).mean()
         data[ma_col_name.format(moving_average=moving_average)] = ma_data[::-1]
 
-    if start_date:
-        start_date = datetime.strptime(start_date, "%Y-%m-%d")
-        data = data[pd.to_datetime(data["candle_date_time_kst"]) >= start_date]
-
     if end_date:
         end_date = datetime.strptime(end_date, "%Y-%m-%d")
         data = data[pd.to_datetime(data["candle_date_time_kst"]) <= end_date]
+
+    if n_ticks:
+        data = data[-n_ticks:]
+    elif start_date:
+        start_date = datetime.strptime(start_date, "%Y-%m-%d")
+        data = data[pd.to_datetime(data["candle_date_time_kst"]) >= start_date]
 
     # draw moving average
     for moving_average in moving_averages:

@@ -65,6 +65,7 @@ class ChartHandler(Page):
                 *self._select_market_codes(),
                 *self._select_candle_format(),
                 *self._date_picker(),
+                *self._number_of_ticks(),
                 *self._load_button(),
             ],
             width=width,
@@ -111,6 +112,23 @@ class ChartHandler(Page):
         )
         return [html.Label("Dates"), html.Br(), date_picker, html.Br(), html.Br()]
 
+    def _number_of_ticks(self) -> Component:
+        """Input the number of ticks to display."""
+        return [
+            html.Label("# of ticks"),
+            html.Br(),
+            html.Label("tips) make it None, if you want to see from startdate."),
+            html.Br(),
+            dcc.Input(
+                id="number-of-ticks",
+                type="number",
+                min=1,
+                value=300,
+            ),
+            html.Br(),
+            html.Br(),
+        ]
+
     def _load_button(self) -> list[Component]:
         """."""
         return [
@@ -125,6 +143,7 @@ class ChartHandler(Page):
         self,
         market_name: str,
         candle_size: str,
+        n_ticks: int,
         start_date: str,
         end_date: str,
     ) -> go.Figure:
@@ -148,6 +167,7 @@ class ChartHandler(Page):
 
         return utils.draw_ohclv(
             data=self.client.get_candlesticks(chart_property),
+            n_ticks=n_ticks,
             start_date=start_date,
             end_date=end_date,
         )
@@ -161,6 +181,7 @@ class ChartHandler(Page):
             Input("load-button-state", "n_clicks"),
             State("input-market-code", "value"),
             State("input-candle-size", "value"),
+            State("number-of-ticks", "value"),
             State("date-picker", "start_date"),
             State("date-picker", "end_date"),
         )
@@ -168,6 +189,7 @@ class ChartHandler(Page):
             n_clicks: int,
             market_name: str,
             candle_size: str,
+            n_ticks: str,
             start_date: str,
             end_date: str,
         ) -> go.Figure:
@@ -175,7 +197,10 @@ class ChartHandler(Page):
             fig = self._get_ohclv_figure(
                 market_name=market_name,
                 candle_size=candle_size,
+                n_ticks=n_ticks,
                 start_date=start_date,
                 end_date=end_date,
             )
-            return fig, "loaded!"
+
+            info = dcc.Markdown(r"""loaded!""")
+            return fig, info
