@@ -133,7 +133,7 @@ class UpbitClient(UrlClient):
         data = pd.concat([newest_data, data], ignore_index=True, verify_integrity=True)
 
         # save the data
-        data.to_pickle(chart_property.fname)
+        data.to_pickle(fname)
         return data
 
     def _request_candle_sticks(

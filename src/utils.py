@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 import pandas as pd
 import plotly.graph_objects as go
@@ -29,11 +29,11 @@ def draw_ohclv(
         data[ma_col_name.format(moving_average=moving_average)] = ma_data[::-1]
 
     if end_date:
-        end_date = datetime.strptime(end_date, "%Y-%m-%d")
+        end_date = datetime.strptime(end_date, "%Y-%m-%d") + timedelta(days=1)
         data = data[pd.to_datetime(data["candle_date_time_kst"]) <= end_date]
 
     if n_ticks:
-        data = data[-n_ticks:]
+        data = data[:n_ticks]
     elif start_date:
         start_date = datetime.strptime(start_date, "%Y-%m-%d")
         data = data[pd.to_datetime(data["candle_date_time_kst"]) >= start_date]
