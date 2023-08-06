@@ -25,7 +25,10 @@ class PersonalKeys:
 
 ### How to use?
 
+##### Use dashboard
 ```bash
 # use dashboard
 > python main.py run --dashboard
 ```
+<img width="1000" alt="image" src="https://github.com/WOOSHIK-M/Quant/assets/44994859/8bbc2db3-7eed-4747-90ca-05e771584ddb">
+
