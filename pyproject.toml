@@ -5,7 +5,7 @@ description = "your project description"
 authors = ["Authors"]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.11"
+python = ">=3.9"
 pyjwt = "^2.7.0"
 dash = "^2.11.1"
 dash-bootstrap-components = "^1.4.2"
