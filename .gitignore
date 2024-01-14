@@ -1,6 +1,6 @@
 # python
 __pycache__
-
+.DS_Store
 
 # user directories
 data
