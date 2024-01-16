@@ -22,13 +22,15 @@ class LoginManager:
 
     @staticmethod
     def run() -> None:
-        """Display info."""
+        """Run a login page."""
         login_manager = LoginManager()
 
+        # get two keys to access the account
         st.title("Upbit Account")
         access_key = st.text_input(label="Access Key")
         secret_key = st.text_input(label="Secret Key", type="password")
 
+        # make a button to login
         if st.button("Access!"):
             success_to_login, account_info = login_manager.get_account_info(
                 access_key, secret_key
