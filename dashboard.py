@@ -2,6 +2,7 @@ import streamlit as st
 from streamlit_option_menu import option_menu
 
 from src.pages import pages
+from src.pages.cache import CacheMemory
 
 with st.sidebar:
     selected_page = option_menu(

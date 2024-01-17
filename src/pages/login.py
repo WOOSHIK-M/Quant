@@ -1,65 +1,116 @@
-import json
-import uuid
+from typing import Any
 
-import jwt
 import pandas as pd
 import plotly.express as px
 import requests
 import streamlit as st
 
+import src.utils as utils
+from src.pages.cache import CacheMemory
+
 UPBIT_OPEN_API_ACCOUNT_URL = "https://api.upbit.com/v1/accounts"
 
 
-class LoginManager:
+class LoginManager(CacheMemory):
     """Connect to Upbit account.
 
     Reference:
         https://docs.upbit.com/docs/create-authorization-request
     """
 
-    name = "Access Keys"
-    icon = "gear"
+    name = "Home"
+    icon = "house"
 
-    @staticmethod
-    def run() -> None:
+    # keys for share memory
+    ACCESS_KEY = "access_key"
+    SECRET_KEY = "secret_key"
+    ACCOUNT_INFO = "account_info"
+
+    IS_LOGGED_IN = "is_logged_in"
+
+    @property
+    def access_key(self) -> str:
+        """Get access key from the shared memory."""
+        return CacheMemory.get_state(self.ACCESS_KEY)
+
+    @property
+    def secret_key(self) -> str:
+        """Get secret key from the shared memory."""
+        return CacheMemory.get_state(self.SECRET_KEY)
+    
+    @property
+    def account_info(self) -> dict[str, Any]:
+        """Get account info from the shared memory."""
+        return CacheMemory.get_state(self.ACCOUNT_INFO)
+
+    @property
+    def is_logged_in(self) -> bool:
+        """Get account info from the shared memory."""
+        return CacheMemory.get_state(self.IS_LOGGED_IN)
+
+    def run(self) -> None:
         """Run a login page."""
-        login_manager = LoginManager()
+        self._init_page()
+    
+        # do log in
+        if not self.is_logged_in and self.log_in_button.button("Log in"):
+            self.log_in()
 
-        # get two keys to access the account
+        # do log out
+        if self.is_logged_in and self.log_in_button.button("Log out"):
+            self.log_out()
+
+        # display account info if logged-in
+        self.display_account_info()
+    
+    def _init_page(self) -> None:
+        """Initialize a page."""
+        CacheMemory.add_state(self.ACCESS_KEY, value="")
+        CacheMemory.add_state(self.SECRET_KEY, value="")
+        CacheMemory.add_state(self.ACCOUNT_INFO, value=None)
+        CacheMemory.add_state(self.IS_LOGGED_IN, value=False)
+
         st.title("Upbit Account")
-        access_key = st.text_input(label="Access Key")
-        secret_key = st.text_input(label="Secret Key", type="password")
 
-        # make a button to login
-        if st.button("Access!"):
-            success_to_login, account_info = login_manager.get_account_info(
-                access_key, secret_key
-            )
-            if success_to_login:
-                login_manager.display_account_info(account_info)
-            else:
-                login_manager.display_incorrect_login()
+        # make two text boxed to get keys to access the account
+        self.text_access_key = st.text_input(label="Access Key")
+        self.text_secret_key = st.text_input(label="Secret Key", type="password")
 
-    def get_account_info(self, access_key: str, secret_key: str) -> tuple[bool, dict]:
-        """Get account information."""
-        payload = {"access_key": access_key, "nonce": str(uuid.uuid4())}
-        token = jwt.encode(payload=payload, key=secret_key)
+        # log-in & log-out button
+        self.log_in_button = st.empty()
 
-        response = requests.get(
+    def log_in(self) -> None:
+        """Log in and save account info to shared memory."""   
+        success_to_login, account_info = utils.get_account_info(
             url=UPBIT_OPEN_API_ACCOUNT_URL,
-            headers={"Authorization": f"Bearer {token}"},
+            access_key=self.text_access_key,
+            secret_key=self.text_secret_key,
         )
-        if response.status_code in [400, 401]:
-            return False, {}
-        if response.text is None:
-            return False, {}
-        return True, json.loads(response.text)
+        CacheMemory.change_state(self.ACCESS_KEY, self.text_access_key)
+        CacheMemory.change_state(self.SECRET_KEY, self.text_secret_key)
+        CacheMemory.change_state(self.IS_LOGGED_IN, success_to_login)
+        CacheMemory.change_state(self.ACCOUNT_INFO, account_info)
 
-    def display_account_info(self, account_info: dict) -> None:
+        # check if logged in normally
+        if not success_to_login:
+            self.display_incorrect_login()
+
+    def log_out(self) -> None:
+        """Log out and delete account info."""
+        CacheMemory.change_state(self.ACCESS_KEY, "")
+        CacheMemory.change_state(self.SECRET_KEY, "")
+        CacheMemory.change_state(self.ACCOUNT_INFO, None)
+        CacheMemory.change_state(self.IS_LOGGED_IN, False)
+
+        self.log_in_button.button("Log in")
+
+    def display_account_info(self) -> None:
         """Display the current account information."""
-        st.subheader("Account INFO.")
+        if not self.account_info:
+            return
 
-        df = pd.DataFrame(account_info)
+        st.subheader("Account INFO.")
+        df = pd.DataFrame(self.account_info)
 
         # TODO: only display unit_currency == KRW
         st.text("NOTE: Only display `KRW` coins currently.")
