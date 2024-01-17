@@ -21,14 +21,12 @@ class Page(metaclass=ABCMeta):
 
 
 class HomePage(Page):
-
     def run(self) -> None:
         st.title("HomePage.")
         st.write(f"TEXT INPUT FROM SETTING: {Page.get_state('input')}")
 
 
 class SettingPage(Page):
-
     def run(self) -> None:
         if Page.get_state("input") is None:
             Page.add_state("input", "Default")

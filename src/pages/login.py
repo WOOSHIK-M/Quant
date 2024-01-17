@@ -37,7 +37,7 @@ class LoginManager(CacheMemory):
     def secret_key(self) -> str:
         """Get secret key from the shared memory."""
         return CacheMemory.get_state(self.SECRET_KEY)
-    
+
     @property
     def account_info(self) -> dict[str, Any]:
         """Get account info from the shared memory."""
@@ -51,7 +51,7 @@ class LoginManager(CacheMemory):
     def run(self) -> None:
         """Run a login page."""
         self._init_page()
-    
+
         # do log in
         if not self.is_logged_in and self.log_in_button.button("Log in"):
             self.log_in()
@@ -62,7 +62,7 @@ class LoginManager(CacheMemory):
 
         # display account info if logged-in
         self.display_account_info()
-    
+
     def _init_page(self) -> None:
         """Initialize a page."""
         CacheMemory.add_state(self.ACCESS_KEY, value="")
@@ -80,7 +80,7 @@ class LoginManager(CacheMemory):
         self.log_in_button = st.empty()
 
     def log_in(self) -> None:
-        """Log in and save account info to shared memory."""   
+        """Log in and save account info to shared memory."""
         success_to_login, account_info = utils.get_account_info(
             url=UPBIT_OPEN_API_ACCOUNT_URL,
             access_key=self.text_access_key,
