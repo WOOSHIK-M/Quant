@@ -10,7 +10,7 @@ with st.sidebar:
         options=[page.name for page in pages.values()],
         icons=[page.icon for page in pages.values()],
         menu_icon="cast",
-        default_index=0,
+        default_index=1,
     )
 
 # display info

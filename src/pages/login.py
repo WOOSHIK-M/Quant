@@ -21,7 +21,7 @@ class LoginManager(CacheMemory):
     name = "Home"
     icon = "house"
 
-    # keys for share memory
+    # keys for shared memory
     ACCESS_KEY = "access_key"
     SECRET_KEY = "secret_key"
     ACCOUNT_INFO = "account_info"
@@ -50,7 +50,7 @@ class LoginManager(CacheMemory):
 
     def run(self) -> None:
         """Run a login page."""
-        self._init_page()
+        self.init_page()
 
         # do log in
         if not self.is_logged_in and self.log_in_button.button("Log in"):
@@ -63,11 +63,11 @@ class LoginManager(CacheMemory):
         # display account info if logged-in
         self.display_account_info()
 
-    def _init_page(self) -> None:
+    def init_page(self) -> None:
         """Initialize a page."""
-        CacheMemory.add_state(self.ACCESS_KEY, value="")
-        CacheMemory.add_state(self.SECRET_KEY, value="")
-        CacheMemory.add_state(self.ACCOUNT_INFO, value=None)
+        CacheMemory.add_state(self.ACCESS_KEY)
+        CacheMemory.add_state(self.SECRET_KEY)
+        CacheMemory.add_state(self.ACCOUNT_INFO)
         CacheMemory.add_state(self.IS_LOGGED_IN, value=False)
 
         st.title("Upbit Account")
