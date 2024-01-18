@@ -1,6 +1,3 @@
-import json
-
-import requests
 import streamlit as st
 
 import src.utils as utils
