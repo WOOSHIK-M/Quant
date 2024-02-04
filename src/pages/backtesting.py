@@ -1,16 +1,14 @@
+import time
+from datetime import datetime, timedelta
+
+import pandas as pd
+import plotly.graph_objects as go
 import streamlit as st
+from plotly.subplots import make_subplots
 
 import src.utils as utils
 from src.pages.cache import CacheMemory
 from src.structure import Market
-
-import pandas as pd
-from datetime import datetime, timedelta
-import time
-from datetime import datetime, timedelta
-from plotly.subplots import make_subplots
-import plotly.graph_objects as go
-
 
 UPBIT_OPEN_API_MARKET_URL = "https://api.upbit.com/v1/market"
 OHLCV_URL = "https://api.upbit.com/v1/candles"
@@ -50,7 +48,7 @@ class ChartHandler:
             from_when=datetime.min,
         )
         return data
-    
+
     def _request_candle_sticks(
         self,
         market_code: str,
@@ -62,7 +60,7 @@ class ChartHandler:
         url = OHLCV_URL + f"/{unit}"
         if unit == "minutes":
             url += f"/{sub_unit}"
-        
+
         # compute count interval
         interval = 60
         if unit == "minutes":
@@ -71,7 +69,7 @@ class ChartHandler:
             interval *= 60 * 24
         elif unit == "weeks":
             interval *= 60 * 24 * 7
-        
+
         # get all candle data
         to_date = datetime.today()
 
@@ -80,7 +78,9 @@ class ChartHandler:
         params = {"market": market_code, "count": 200}
         while True:
             params["to"] = to_date.strftime("%Y-%m-%d %H:%M:%S")
-            success_to_request, candles = utils.request_info(url=url, headers=headers, params=params)
+            success_to_request, candles = utils.request_info(
+                url=url, headers=headers, params=params
+            )
             assert success_to_request
 
             data += candles
@@ -95,7 +95,7 @@ class ChartHandler:
 
         data = pd.DataFrame.from_dict(data)
         return data[pd.to_datetime(data["candle_date_time_kst"]) > from_when]
-    
+
     def draw(self, data: pd.DataFrame) -> go.Figure:
         """Draw candle chart."""
         fig = make_subplots(
@@ -165,7 +165,9 @@ class BackTestingManager(CacheMemory):
         # draw a chart of the selected coin
         if st.button("Load"):
             market_code = Market.resolve_key(selected_market)
-            data = self.chart_handler.get_candlesticks(market_code=market_code, period=period)
+            data = self.chart_handler.get_candlesticks(
+                market_code=market_code, period=period
+            )
             st.plotly_chart(self.chart_handler.draw(data), use_container_width=True)
 
     def _get_market_infos(self) -> dict[str, Market]:

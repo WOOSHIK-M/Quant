@@ -5,6 +5,7 @@ from typing import Any
 import jwt
 import requests
 
+
 def get_account_info(url: str, access_key: str, secret_key: str) -> tuple[bool, dict]:
     """Get account information."""
     payload = {"access_key": access_key, "nonce": str(uuid.uuid4())}
