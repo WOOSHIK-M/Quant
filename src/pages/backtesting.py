@@ -152,23 +152,27 @@ class BackTestingManager(CacheMemory):
 
     def run(self) -> None:
         """Run a back-testing page."""
-        self.init_page()
+        market, period = self.init_page()
 
-    def init_page(self) -> None:
+        # draw a candle chart
+        if st.button("Load"):
+            self.display_candle_chart(market, period)
+
+    def init_page(self) -> tuple[str, str]:
         """Initialize a page."""
         st.title("Dashboard")
 
-        # make a select box
         selected_market = st.selectbox(label="markets", options=self.market_list)
         period = st.selectbox(label="period", options=self.chart_handler.periods)
+        return selected_market, period
 
-        # draw a chart of the selected coin
-        if st.button("Load"):
-            market_code = Market.resolve_key(selected_market)
-            data = self.chart_handler.get_candlesticks(
-                market_code=market_code, period=period
-            )
-            st.plotly_chart(self.chart_handler.draw(data), use_container_width=True)
+    def display_candle_chart(self, market: str, period: str) -> None:
+        """Call and draw the candle chart."""
+        market_code = Market.resolve_key(market)
+        data = self.chart_handler.get_candlesticks(
+            market_code=market_code, period=period
+        )
+        st.plotly_chart(self.chart_handler.draw(data), use_container_width=True)
 
     def _get_market_infos(self) -> dict[str, Market]:
         """Get all markets from Upbit."""
