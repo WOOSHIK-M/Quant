@@ -8,6 +8,7 @@ import requests
 
 from src.api_urls import UPBIT_OPEN_API_MARKET_URL
 
+
 def get_account_info(url: str, access_key: str, secret_key: str) -> tuple[bool, dict]:
     """Get account information."""
     payload = {"access_key": access_key, "nonce": str(uuid.uuid4())}
@@ -36,7 +37,7 @@ def request_info(
 
 def get_all_markets() -> list[dict[str, str]]:
     """Get all markets supported by Upbit.
-    
+
     Note:
         - It returns the list of market info.
         - market info contains (market code, korean name, english name) of each.

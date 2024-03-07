@@ -1,4 +1,5 @@
 import itertools
+import time
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
@@ -6,13 +7,11 @@ from typing import Optional
 import pandas as pd
 
 import src.utils as utils
-from src.redis import redis_client
 from src.api_urls import OHLCV_URL
+from src.redis import redis_client
 
-import time
 DATA_PATH = Path("data")
 DATA_PATH.mkdir(exist_ok=True)
-
 
 
 class UpbitCandleMiner:
@@ -63,10 +62,10 @@ class UpbitCandleMiner:
             )
             print(f"[Loading]  - {market} / {period}", end=" - ")
             self._update_candles(market=market, period=period)
-            
+
             redis_client.rpush(self.TASK_QUEUE, self.make_task(market, period))
             time.sleep(0.3)
-    
+
     def load_candle_data(self, market: str, period: str) -> pd.DataFrame:
         """Load candle data."""
         dir_path = self._get_market_directory(market=market, period=period)
@@ -76,7 +75,7 @@ class UpbitCandleMiner:
         while not list(dir_path.iterdir()):
             print("Loading...", market)
             time.sleep(0.1)
-    
+
         # get the newly dumped data
         fnames = sorted(dir_path.iterdir())
         return pd.concat([pd.read_parquet(fname) for fname in fnames])
@@ -141,7 +140,9 @@ class UpbitCandleMiner:
                 ):
                     break
             except:
-                import pdb; pdb.set_trace()
+                import pdb
+
+                pdb.set_trace()
 
             to_date -= timedelta(minutes=200 * interval)
 

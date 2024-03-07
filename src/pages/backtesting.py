@@ -3,13 +3,11 @@ import plotly.graph_objects as go
 import streamlit as st
 from plotly.subplots import make_subplots
 
-from src.pages.cache import CacheMemory
-from src.structure import Market
-from src.redis import redis_client
-
 import src.utils as utils
 from src.data_miner import UpbitCandleMiner
-
+from src.pages.cache import CacheMemory
+from src.redis import redis_client
+from src.structure import Market
 
 UPBIT_OPEN_API_MARKET_URL = "https://api.upbit.com/v1/market"
 OHLCV_URL = "https://api.upbit.com/v1/candles"
