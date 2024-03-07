@@ -6,9 +6,8 @@ import requests
 import streamlit as st
 
 import src.utils as utils
+from src.api_urls import UPBIT_OPEN_API_ACCOUNT_URL
 from src.pages.cache import CacheMemory
-
-UPBIT_OPEN_API_ACCOUNT_URL = "https://api.upbit.com/v1/accounts"
 
 
 class LoginManager(CacheMemory):

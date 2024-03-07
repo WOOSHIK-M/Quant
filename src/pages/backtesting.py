@@ -4,13 +4,10 @@ import streamlit as st
 from plotly.subplots import make_subplots
 
 import src.utils as utils
+from src.api_urls import OHLCV_URL, UPBIT_OPEN_API_MARKET_URL
 from src.data_miner import UpbitCandleMiner
 from src.pages.cache import CacheMemory
-from src.redis import redis_client
 from src.structure import Market
-
-UPBIT_OPEN_API_MARKET_URL = "https://api.upbit.com/v1/market"
-OHLCV_URL = "https://api.upbit.com/v1/candles"
 
 
 class BackTestingManager(CacheMemory):
