@@ -1,6 +1,6 @@
 import click
 
-from src.data_miner import UpbitCandleMiner
+from data_miner import UpbitCandleMiner
 
 
 @click.group()
