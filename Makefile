@@ -9,6 +9,14 @@ init:
 	@command -v pdm >/dev/null 2>&1 || (echo "PDM not installed. Installing..." && pip install pdm && echo "PDM is installed!")
 	pdm install
 	pdm run pre-commit install
+	docker pull redis
+
+start-redis:
+	docker run -d -p 6379:6379 --name redis redis
+
+stop-redis:
+	docker stop redis
+	docker rm redis
 
 format:
 	pdm run black .
