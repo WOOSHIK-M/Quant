@@ -1,21 +1,158 @@
-[tool.poetry]
-name = "quant"
+[project]
+name = "Quant"
 version = "0.1.0"
-description = ""
-authors = ["WOOSHIK-M <wooshik.m@gmail.com>"]
+description = "Default template for PDM package"
+authors = [
+    {name = "WOOSHIK-M", email = "wooshik.m@gmail.com"},
+    {name = "limjiyoon", email = "luinpark@gmail.com"},
+]
+dependencies = [
+    "streamlit>=1.32.0",
+    "streamlit-option-menu>=0.3.12",
+    "plotly>=5.19.0",
+    "watchdog>=4.0.0",
+    "pyjwt>=2.8.0",
+    "redis>=5.0.2",
+]
+requires-python = "~=3.11"
 readme = "README.md"
-
-[tool.poetry.dependencies]
-python = "^3.11"
-streamlit = "^1.30.0"
-streamlit-option-menu = "^0.3.6"
-plotly = "^5.18.0"
-watchdog = "^3.0.0"
-black = "^23.12.1"
-isort = "^5.13.2"
-pyjwt = "^2.8.0"
-
+license = {text = "MIT"}
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[tool.pdm]
+distribution = true
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "pyright>=1.1.352",
+    "ruff>=0.3.1",
+    "pytest>=8.0.2",
+    "black>=24.2.0",
+    "isort>=5.13.2",
+    "pre-commit>=3.6.2",
+]
+
+
+[tool.pdm.scripts]
+dashboard = "streamlit run src/quant/dashboard.py"
+
+
+[tool.black]
+line-length = 110
+
+# Python Formatter
+[tool.ruff]
+# Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
+lint.select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "N",  # pep-naming
+    # "D",  # pydocstyle
+    "B",  # flakes-bugbear
+    "ANN",# flakes-annotations
+    "A",  # flakes-builtins
+    "COM",# flakes-commas
+    "T10",# flakes-debugger
+    "SIM",# flakes-simplify
+    "ARG",# flakes-unused-arguments
+    "PLC",# pylint-convention
+    "PLE",# pylint-errors
+    "UP",  # pyupgrade
+    "PL"  # pylint
+]
+
+# Allow autofix for all enabled rules (when `--fix`) is provided.
+lint.fixable = ["D", "COM", "PLC", "UP", "W292"]
+lint.ignore = [
+    "A003",
+    "ANN002",
+    "ANN003",
+    "ANN101",
+    "ANN102",
+    "ANN204",
+    "ANN401",
+    "B008",
+    "COM812",
+    "D104",
+    "D107",
+    "D203",
+    "D213",
+    "D406",
+    "D407",
+    "D408",
+    "D409",
+    "D415",
+    "D417",
+    "N802",
+    "N803",
+    "N806",
+    "N812",
+    "N817",
+    "N818",
+    "PLE1205",
+    "PLR2004",
+    "SIM108",  # tenary operation
+    "SIM300",  # Yoda condition
+    "UP015",
+]
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+]
+
+# Same as Black.
+line-length = 110
+output-format = "full"
+
+
+# Assume Python 3.11.
+target-version = "py311"
+lint.pylint = {"max-args"=13, "max-statements"=60}
+
+# Python static type checker
+[tool.pyright]
+exclude = [
+    "**/build/**",
+]
+
+reportMissingImports = true
+reportMissingTypeStubs = false
+pythonVersion = "3.11"
+pythonPlatform = "Linux"
+useLibraryCodeForTypes = false
+reportIncompatibleMethodOverride = false
+
+[tool.isort]
+multi_line_output = 3
+force_grid_wrap = 0
+include_trailing_comma = true
+use_parentheses = true
+ensure_newline_before_comments = true
+line_length = 110
+profile = "black"
+
+[tool.pytest]
+norecursedirs = "submodule *checkpoint* config data"
