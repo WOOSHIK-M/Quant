@@ -6,7 +6,7 @@ from typing import Any
 import jwt
 import requests
 
-from src.api_urls import UPBIT_OPEN_API_MARKET_URL
+from api_urls import UPBIT_OPEN_API_MARKET_URL
 
 
 def get_account_info(url: str, access_key: str, secret_key: str) -> tuple[bool, dict]:

@@ -5,9 +5,9 @@ import plotly.express as px
 import requests
 import streamlit as st
 
-import src.utils as utils
-from src.api_urls import UPBIT_OPEN_API_ACCOUNT_URL
-from src.pages.cache import CacheMemory
+import utils as utils
+from api_urls import UPBIT_OPEN_API_ACCOUNT_URL
+from pages.cache import CacheMemory
 
 
 class LoginManager(CacheMemory):

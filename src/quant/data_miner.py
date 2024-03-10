@@ -6,9 +6,9 @@ from typing import Optional
 
 import pandas as pd
 
-import src.utils as utils
-from src.api_urls import OHLCV_URL
-from src.redis import redis_client
+import utils as utils
+from api_urls import OHLCV_URL
+from redis_connector import redis_client
 
 DATA_PATH = Path("data")
 DATA_PATH.mkdir(exist_ok=True)

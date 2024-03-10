@@ -1,6 +1,8 @@
 # python
 __pycache__
 .DS_Store
+.pdm-python
+.venv
 
 # user directories
 data

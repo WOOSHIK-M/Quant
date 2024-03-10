@@ -3,11 +3,11 @@ import plotly.graph_objects as go
 import streamlit as st
 from plotly.subplots import make_subplots
 
-import src.utils as utils
-from src.api_urls import OHLCV_URL, UPBIT_OPEN_API_MARKET_URL
-from src.data_miner import UpbitCandleMiner
-from src.pages.cache import CacheMemory
-from src.structure import Market
+import utils as utils
+from api_urls import OHLCV_URL, UPBIT_OPEN_API_MARKET_URL
+from data_miner import UpbitCandleMiner
+from pages.cache import CacheMemory
+from structure import Market
 
 
 class BackTestingManager(CacheMemory):

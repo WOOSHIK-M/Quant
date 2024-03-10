@@ -6,15 +6,29 @@ all: init format lint
 check: format lint
 
 init:
-	ls
+	@command -v pdm >/dev/null 2>&1 || (echo "PDM not installed. Installing..." && pip install pdm && echo "PDM is installed!")
+	pdm install
+	pdm run pre-commit install
+	docker pull redis
+
+start-redis:
+	docker run -d -p 6379:6379 --name redis redis
+
+stop-redis:
+	docker stop redis
+	docker rm redis
 
 format:
-	poetry run black .
-	poetry run isort . --skip-gitignore --profile black
+	pdm run black .
+	pdm run isort . --skip-gitignore --profile black
 
 format-check:
-	poetry run black . --check
-	poetry run isort . --skip-gitignore --profile black --check
+	pdm run black . --check
+	pdm run isort . --skip-gitignore --profile black --check
+
+lint:
+	pdm run pyright src
+	pdm run ruf src --fix
 
 tree:
 	tree -I "*data|.pkl|*.png|*.txt|$(shell cat .gitignore | tr -s '\n' '|' )"
