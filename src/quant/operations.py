@@ -1,5 +1,4 @@
 import click
-
 from data_miner import UpbitCandleMiner
 
 

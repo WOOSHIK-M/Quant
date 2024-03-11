@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Optional
 
 import pandas as pd
-
 import utils as utils
 from api_urls import OHLCV_URL
 from redis_connector import redis_client
@@ -57,9 +56,7 @@ class UpbitCandleMiner:
         ]
         redis_client.lpush(self.TASK_QUEUE, *market_lst)
         while True:
-            market, period = (
-                redis_client.lpop(self.TASK_QUEUE).decode("utf-8").split("/")
-            )
+            market, period = redis_client.lpop(self.TASK_QUEUE).decode("utf-8").split("/")
             print(f"[Loading]  - {market} / {period}", end=" - ")
             self._update_candles(market=market, period=period)
 
@@ -139,7 +136,7 @@ class UpbitCandleMiner:
                     candles[-1]["candle_date_time_utc"]
                 ):
                     break
-            except:
+            except Exception:
                 import pdb
 
                 pdb.set_trace()
@@ -153,19 +150,14 @@ class UpbitCandleMiner:
     def _dump_data(self, data: pd.DataFrame, dir_path: Path) -> None:
         """Make data to multiple chunks and save them."""
         chunks = [
-            data.iloc[::-1][i : i + self.CHUNK_SIZE]
-            for i in range(0, len(data), self.CHUNK_SIZE)
+            data.iloc[::-1][i : i + self.CHUNK_SIZE] for i in range(0, len(data), self.CHUNK_SIZE)
         ]
         for chunk in chunks:
             start_time = chunk["candle_date_time_utc"].iloc[0]
             end_time = chunk["candle_date_time_utc"].iloc[-1]
-            chunk.iloc[::-1].to_parquet(
-                path=dir_path / f"{start_time} - {end_time}.parquet"
-            )
+            chunk.iloc[::-1].to_parquet(path=dir_path / f"{start_time} - {end_time}.parquet")
 
-    def _get_lastest_time(
-        self, market: str, period: str
-    ) -> tuple[pd.DataFrame, datetime]:
+    def _get_lastest_time(self, market: str, period: str) -> tuple[pd.DataFrame, datetime]:
         """Get the lastest time of cached data."""
         dir_path = self._get_market_directory(market=market, period=period)
         fnames = sorted(dir_path.iterdir())

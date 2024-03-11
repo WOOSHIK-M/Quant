@@ -1,5 +1,5 @@
-from pages.backtesting import BackTestingManager
-from pages.login import LoginManager
+from contents.backtesting import BackTestingManager
+from contents.login import LoginManager
 
 # display order
 pages = {
