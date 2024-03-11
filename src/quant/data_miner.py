@@ -136,6 +136,7 @@ class UpbitCandleMiner:
                     candles[-1]["candle_date_time_utc"]
                 ):
                     break
+            # TODO : Remove this!
             except Exception:
                 import pdb
 
