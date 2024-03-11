@@ -7,7 +7,7 @@ import streamlit as st
 
 import utils as utils
 from api_urls import UPBIT_OPEN_API_ACCOUNT_URL
-from pages.cache import CacheMemory
+from contents.cache import CacheMemory
 
 
 class LoginManager(CacheMemory):
