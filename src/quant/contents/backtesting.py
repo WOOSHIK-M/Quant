@@ -1,12 +1,10 @@
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
-from plotly.subplots import make_subplots
-
 import utils as utils
-from api_urls import OHLCV_URL, UPBIT_OPEN_API_MARKET_URL
-from data_miner import UpbitCandleMiner
 from contents.cache import CacheMemory
+from data_miner import UpbitCandleMiner
+from plotly.subplots import make_subplots
 from structure import Market
 
 
