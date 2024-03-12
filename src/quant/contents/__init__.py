@@ -2,7 +2,7 @@ from contents.backtesting import BackTestingManager
 from contents.login import LoginManager
 
 # display order
-pages = {
+contents = {
     LoginManager.name: LoginManager(),
     BackTestingManager.name: BackTestingManager(),
 }

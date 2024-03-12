@@ -18,6 +18,9 @@ stop-redis:
 	docker stop redis
 	docker rm redis
 
+enter-redis:
+	docker exec -it redis redis-cli
+
 format:
 	pdm run black .
 	pdm run isort . --skip-gitignore --profile black

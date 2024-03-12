@@ -55,6 +55,7 @@ class UpbitCandleMiner:
             for market, period in itertools.product(self.markets, self.periods)
         ]
         redis_client.lpush(self.TASK_QUEUE, *market_lst)
+        print("ready to mining !")
         while True:
             market, period = redis_client.lpop(self.TASK_QUEUE).decode("utf-8").split("/")
             print(f"[Loading]  - {market} / {period}", end=" - ")
@@ -70,7 +71,6 @@ class UpbitCandleMiner:
         task = self.make_task(market, period)
         redis_client.lpush(self.TASK_QUEUE, task)
         while not list(dir_path.iterdir()):
-            print("Loading...", market)
             time.sleep(0.1)
 
         # get the newly dumped data
@@ -131,16 +131,10 @@ class UpbitCandleMiner:
             assert success_to_request, "Wrong connections"
 
             data += candles
-            try:
-                if not candles or from_when >= datetime.fromisoformat(
-                    candles[-1]["candle_date_time_utc"]
-                ):
-                    break
-            # TODO : Remove this!
-            except Exception:
-                import pdb
-
-                pdb.set_trace()
+            if not candles or from_when >= datetime.fromisoformat(
+                candles[-1]["candle_date_time_utc"]
+            ):
+                break
 
             to_date -= timedelta(minutes=200 * interval)
 
@@ -188,3 +182,8 @@ class UpbitCandleMiner:
         dir_path = DATA_PATH / market / period
         dir_path.mkdir(exist_ok=True, parents=True)
         return dir_path
+
+
+if __name__ == "__main__":
+    miner = UpbitCandleMiner()
+    miner.run()
