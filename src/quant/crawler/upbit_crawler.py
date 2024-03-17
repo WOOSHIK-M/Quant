@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
+from time import sleep
 
 import polars
+import pandas as pd
 
 import quant.utils as utils
 from quant.crawler.crawler import Crawler
@@ -44,17 +46,18 @@ class UpbitCrawler(Crawler):
         _, markets = utils.request_info(url=self.__UPBIT_MARKET_API_URL + "/all")
         return tuple(market["market"] for market in markets)
 
-    def _crawl(self, market: str, period: str) -> polars.DataFrame:
+    def _crawl(self, market: str, period: str) -> pd.DataFrame:
         """Crawl the candle stick data from the market in period."""
         unit, minutes = self.__periods[period]
         url = f"{self.__UPBIT_CANDLE_API_URL}/{unit}"
 
-        time = datetime.today()
+        target_datetime = datetime.today()
         data = []
-        for _ in range(self.__MAX_REQUEST_PER_SECOND):
-            data += self.__request_candlestick(url, market, time)
-            time -= timedelta(minutes=minutes * self.__MAX_DATA_COUNT_PER_REQUEST)
-        return polars.from_dicts(data)
+        for _ in range(self.__MAX_REQUEST_PER_SECOND * 2):
+            data += self.__request_candlestick(url, market, target_datetime)
+            target_datetime -= timedelta(minutes=minutes * self.__MAX_DATA_COUNT_PER_REQUEST)
+        result = polars.from_dicts(data).to_pandas()
+        return result
 
     def __request_candlestick(self, url, market, time) -> list:
         """Request candlestick data from Upbit."""
@@ -63,10 +66,21 @@ class UpbitCrawler(Crawler):
             "count": self.__MAX_DATA_COUNT_PER_REQUEST,
             "to": time.strftime("%Y-%m-%d %H:%M:%S"),
         }
-        success_to_request, candles = utils.request_info(
-            url=url,
-            headers={"accept": "application/json"},
-            params=params,
-        )
-        assert success_to_request, f"Wrong connections - {url}, params: {params}"
+
+        while True:
+            success_to_request, candles = utils.request_info(
+                url=url,
+                headers={"accept": "application/json"},
+                params=params,
+            )
+            assert success_to_request, f"Wrong connections - {url}, params: {params}"
+            if len(candles) == self.__MAX_DATA_COUNT_PER_REQUEST:
+                break
+
+            # If the data is not enough, retry after 0.5 seconds.
+            # This is because Upbit API has a limit of 5 requests per second.
+            # There is no criteria for waiting time, so I just set 0.5 seconds.
+            self.logger.warning(f"Failed to get enough data. Retry after 0.5 seconds.")
+            self.logger.warning(f"Message: {candles}")
+            sleep(0.5)
         return candles

@@ -162,7 +162,7 @@ class UpbitCandleMiner:
         from_when = datetime.strptime(from_when, "%Y-%m-%dT%H:%M:%S")
         return cached_data.iloc[::-1], from_when + timedelta(seconds=1)
 
-    def _get_units_from_period(self, period: str) -> tuple[str, Optional[int]]:
+    def _get_units_from_period(self, period: str) -> tuple[str, int | None]:
         """Get unit (and sub-unit) from period."""
         unit_info = period.split(" ")
 
