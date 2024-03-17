@@ -6,7 +6,7 @@ from quant import utils
 from quant.crawler.crawler import Crawler
 
 
-class UbpitCrawler(Crawler):
+class UpbitCrawler(Crawler):
     """Crawl Upbit coin candlestick data using Upbit API."""
 
     def __init__(self):
