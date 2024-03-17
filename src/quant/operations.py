@@ -1,5 +1,5 @@
 import click
-from data_miner import UpbitCandleMiner
+from quant.data_miner import UpbitCandleMiner
 
 
 @click.group()

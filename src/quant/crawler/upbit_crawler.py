@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 import polars
 
-from quant import utils
+import quant.utils as utils
 from quant.crawler.crawler import Crawler
 
 

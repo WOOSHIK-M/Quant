@@ -1,11 +1,11 @@
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
-import utils as utils
-from contents.cache import CacheMemory
-from data_miner import UpbitCandleMiner
+import quant.utils as utils
+from quant.contents.cache import CacheMemory
+from quant.data_miner import UpbitCandleMiner
 from plotly.subplots import make_subplots
-from structure import Market
+from quant.structure import Market
 
 
 class BackTestingManager(CacheMemory):

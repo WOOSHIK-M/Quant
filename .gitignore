@@ -4,6 +4,7 @@ __pycache__
 .pdm-python
 .venv
 .vscode
+.idea
 
 # user directories
 data
