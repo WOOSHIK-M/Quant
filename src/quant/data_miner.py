@@ -2,13 +2,12 @@ import itertools
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Optional
 
 import pandas as pd
 
-import utils as utils
-from api_urls import OHLCV_URL
-from redis_connector import redis_client
+import quant.utils as utils
+from quant.api_urls import OHLCV_URL
+from quant.redis_connector import redis_client
 
 DATA_PATH = Path("data")
 DATA_PATH.mkdir(exist_ok=True)
@@ -56,10 +55,9 @@ class UpbitCandleMiner:
             for market, period in itertools.product(self.markets, self.periods)
         ]
         redis_client.lpush(self.TASK_QUEUE, *market_lst)
+        print("ready to mining !")
         while True:
-            market, period = (
-                redis_client.lpop(self.TASK_QUEUE).decode("utf-8").split("/")
-            )
+            market, period = redis_client.lpop(self.TASK_QUEUE).decode("utf-8").split("/")
             print(f"[Loading]  - {market} / {period}", end=" - ")
             self._update_candles(market=market, period=period)
 
@@ -73,7 +71,6 @@ class UpbitCandleMiner:
         task = self.make_task(market, period)
         redis_client.lpush(self.TASK_QUEUE, task)
         while not list(dir_path.iterdir()):
-            print("Loading...", market)
             time.sleep(0.1)
 
         # get the newly dumped data
@@ -134,15 +131,10 @@ class UpbitCandleMiner:
             assert success_to_request, "Wrong connections"
 
             data += candles
-            try:
-                if not candles or from_when >= datetime.fromisoformat(
-                    candles[-1]["candle_date_time_utc"]
-                ):
-                    break
-            except:
-                import pdb
-
-                pdb.set_trace()
+            if not candles or from_when >= datetime.fromisoformat(
+                candles[-1]["candle_date_time_utc"]
+            ):
+                break
 
             to_date -= timedelta(minutes=200 * interval)
 
@@ -153,19 +145,14 @@ class UpbitCandleMiner:
     def _dump_data(self, data: pd.DataFrame, dir_path: Path) -> None:
         """Make data to multiple chunks and save them."""
         chunks = [
-            data.iloc[::-1][i : i + self.CHUNK_SIZE]
-            for i in range(0, len(data), self.CHUNK_SIZE)
+            data.iloc[::-1][i : i + self.CHUNK_SIZE] for i in range(0, len(data), self.CHUNK_SIZE)
         ]
         for chunk in chunks:
             start_time = chunk["candle_date_time_utc"].iloc[0]
             end_time = chunk["candle_date_time_utc"].iloc[-1]
-            chunk.iloc[::-1].to_parquet(
-                path=dir_path / f"{start_time} - {end_time}.parquet"
-            )
+            chunk.iloc[::-1].to_parquet(path=dir_path / f"{start_time} - {end_time}.parquet")
 
-    def _get_lastest_time(
-        self, market: str, period: str
-    ) -> tuple[pd.DataFrame, datetime]:
+    def _get_lastest_time(self, market: str, period: str) -> tuple[pd.DataFrame, datetime]:
         """Get the lastest time of cached data."""
         dir_path = self._get_market_directory(market=market, period=period)
         fnames = sorted(dir_path.iterdir())
@@ -179,7 +166,7 @@ class UpbitCandleMiner:
         from_when = datetime.strptime(from_when, "%Y-%m-%dT%H:%M:%S")
         return cached_data.iloc[::-1], from_when + timedelta(seconds=1)
 
-    def _get_units_from_period(self, period: str) -> tuple[str, Optional[int]]:
+    def _get_units_from_period(self, period: str) -> tuple[str, int | None]:
         """Get unit (and sub-unit) from period."""
         unit_info = period.split(" ")
 
@@ -195,3 +182,8 @@ class UpbitCandleMiner:
         dir_path = DATA_PATH / market / period
         dir_path.mkdir(exist_ok=True, parents=True)
         return dir_path
+
+
+if __name__ == "__main__":
+    miner = UpbitCandleMiner()
+    miner.run()

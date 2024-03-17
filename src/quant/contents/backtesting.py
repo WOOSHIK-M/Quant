@@ -3,11 +3,10 @@ import plotly.graph_objects as go
 import streamlit as st
 from plotly.subplots import make_subplots
 
-import utils as utils
-from api_urls import OHLCV_URL, UPBIT_OPEN_API_MARKET_URL
-from data_miner import UpbitCandleMiner
-from contents.cache import CacheMemory
-from structure import Market
+import quant.utils as utils
+from quant.contents.cache import CacheMemory
+from quant.crawler.upbit_crawler import UpbitCrawler
+from quant.structure import Market
 
 
 class BackTestingManager(CacheMemory):
@@ -21,7 +20,7 @@ class BackTestingManager(CacheMemory):
         self.markets = [Market(**market) for market in utils.get_all_markets()]
         self.market_names = [market.name for market in self.markets]
 
-        self.candle_miner = UpbitCandleMiner()
+        self.candle_miner = UpbitCrawler()
 
     def run(self) -> None:
         """Run a back-testing page."""
@@ -39,7 +38,7 @@ class BackTestingManager(CacheMemory):
     def _display_candle_chart(self, market_name: str, period: str) -> None:
         """Call and draw the candle chart."""
         market_code = Market.get_code_from_name(market_name)
-        candles = self.candle_miner.load_candle_data(market_code, period)
+        candles = self.candle_miner.crawl(market_code, period)
         st.plotly_chart(self._draw_ohlcv(candles), use_container_width=True)
 
     def _draw_ohlcv(self, data: pd.DataFrame) -> go.Figure:

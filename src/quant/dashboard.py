@@ -1,7 +1,7 @@
 import streamlit as st
 from streamlit_option_menu import option_menu
 
-from contents import contents
+from quant.contents import contents
 
 st.set_page_config(layout="wide")
 

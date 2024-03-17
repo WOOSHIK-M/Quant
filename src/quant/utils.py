@@ -1,12 +1,12 @@
-import json
 import time
 import uuid
 from typing import Any
 
 import jwt
+import orjson as json
 import requests
 
-from api_urls import UPBIT_OPEN_API_MARKET_URL
+from quant.api_urls import UPBIT_OPEN_API_MARKET_URL
 
 
 def get_account_info(url: str, access_key: str, secret_key: str) -> tuple[bool, dict]:
@@ -16,9 +16,7 @@ def get_account_info(url: str, access_key: str, secret_key: str) -> tuple[bool, 
     return request_info(url=url, headers={"Authorization": f"Bearer {token}"})
 
 
-def request_info(
-    url: str, headers: str = None, params: str = None, is_order_request: bool = False
-) -> Any:
+def request_info(url: str, headers: dict = None, params: dict = None, is_order_request: bool = False) -> Any:
     """Get data from the given url.
 
     Reference:
