@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Optional
 
 import pandas as pd
+
 import quant.utils as utils
 from quant.api_urls import OHLCV_URL
 from quant.redis_connector import redis_client
@@ -51,8 +52,7 @@ class UpbitCandleMiner:
             redis_client.delete(self.TASK_QUEUE)
 
         market_lst = [
-            self.make_task(market, period)
-            for market, period in itertools.product(self.markets, self.periods)
+            self.make_task(market, period) for market, period in itertools.product(self.markets, self.periods)
         ]
         redis_client.lpush(self.TASK_QUEUE, *market_lst)
         print("ready to mining !")
@@ -131,9 +131,7 @@ class UpbitCandleMiner:
             assert success_to_request, "Wrong connections"
 
             data += candles
-            if not candles or from_when >= datetime.fromisoformat(
-                candles[-1]["candle_date_time_utc"]
-            ):
+            if not candles or from_when >= datetime.fromisoformat(candles[-1]["candle_date_time_utc"]):
                 break
 
             to_date -= timedelta(minutes=200 * interval)
@@ -144,9 +142,7 @@ class UpbitCandleMiner:
 
     def _dump_data(self, data: pd.DataFrame, dir_path: Path) -> None:
         """Make data to multiple chunks and save them."""
-        chunks = [
-            data.iloc[::-1][i : i + self.CHUNK_SIZE] for i in range(0, len(data), self.CHUNK_SIZE)
-        ]
+        chunks = [data.iloc[::-1][i : i + self.CHUNK_SIZE] for i in range(0, len(data), self.CHUNK_SIZE)]
         for chunk in chunks:
             start_time = chunk["candle_date_time_utc"].iloc[0]
             end_time = chunk["candle_date_time_utc"].iloc[-1]

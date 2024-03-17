@@ -71,4 +71,3 @@ class UpbitCrawler(Crawler):
         )
         assert success_to_request, "Wrong connections"
         return candles
-

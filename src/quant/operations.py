@@ -1,4 +1,5 @@
 import click
+
 from quant.data_miner import UpbitCandleMiner
 
 

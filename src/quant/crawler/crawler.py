@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
+
 from quant.logger.logger import LoggerFactory
 
 
 class Crawler(ABC):
     """Crawler is an abstract class for crawling candle stick data from the market."""
+
     logger = LoggerFactory.make_logger("Crawler")
 
     @property
