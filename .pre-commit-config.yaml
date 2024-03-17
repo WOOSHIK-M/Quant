@@ -53,13 +53,6 @@ repos:
         name: Check PEP8
         args: [--max-line-length=120, "--ignore=E121,E123,E126,E203,E226,E24,E704,W503,W504", "--per-file-ignores=__init__.py:F401"]
 
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.12.0
-    hooks:
-      - id: isort
-        name: Format imports
-        args: [--profile=black]
-
   - repo: https://github.com/psf/black
     rev: 23.1.0
     hooks:

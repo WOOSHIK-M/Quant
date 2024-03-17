@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
 from time import sleep
 
-import polars
 import pandas as pd
+import polars
 
 import quant.utils as utils
 from quant.crawler.crawler import Crawler
@@ -17,6 +17,7 @@ class UpbitCrawler(Crawler):
         self.__UPBIT_CANDLE_API_URL = "https://api.upbit.com/v1/candles"
 
         # Constants
+        # TODO: These constants should be checked from the Upbit API documentation.
         self.__MAX_REQUEST_PER_SECOND = 5
         self.__MAX_DATA_COUNT_PER_REQUEST = 200
 
@@ -53,6 +54,7 @@ class UpbitCrawler(Crawler):
 
         target_datetime = datetime.today()
         data = []
+        # TODO: This loop should be refactored to use async/await or multiprocessing.
         for _ in range(self.__MAX_REQUEST_PER_SECOND * 2):
             data += self.__request_candlestick(url, market, target_datetime)
             target_datetime -= timedelta(minutes=minutes * self.__MAX_DATA_COUNT_PER_REQUEST)
@@ -80,7 +82,7 @@ class UpbitCrawler(Crawler):
             # If the data is not enough, retry after 0.5 seconds.
             # This is because Upbit API has a limit of 5 requests per second.
             # There is no criteria for waiting time, so I just set 0.5 seconds.
-            self.logger.warning(f"Failed to get enough data. Retry after 0.5 seconds.")
+            self.logger.warning("Failed to get enough data. Retry after 0.5 seconds.")
             self.logger.warning(f"Message: {candles}")
             sleep(0.5)
         return candles

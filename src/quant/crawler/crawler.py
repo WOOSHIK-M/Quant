@@ -22,6 +22,7 @@ class Crawler(ABC):
         """Get all available candle periods."""
         pass
 
+    # TODO: Crawl method should include the start and end date.
     def crawl(self, market: str, period: str) -> pd.DataFrame:
         """Crawl the candle stick data from the market in period."""
         if market not in self.markets:
