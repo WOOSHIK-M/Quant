@@ -58,16 +58,15 @@ class UpbitCrawler(Crawler):
 
     def __request_candlestick(self, url, market, time) -> list:
         """Request candlestick data from Upbit."""
-        print(url)
-        print(time.strftime("%Y-%m-%d %H:%M:%S"))
+        params = {
+            "market": market,
+            "count": self.__MAX_DATA_COUNT_PER_REQUEST,
+            "to": time.strftime("%Y-%m-%d %H:%M:%S"),
+        }
         success_to_request, candles = utils.request_info(
             url=url,
             headers={"accept": "application/json"},
-            params={
-                "market": market,
-                "count": self.__MAX_DATA_COUNT_PER_REQUEST,
-                "to": time.strftime("%Y-%m-%d %H:%M:%S"),
-            },
+            params=params,
         )
-        assert success_to_request, "Wrong connections"
+        assert success_to_request, f"Wrong connections - {url}, params: {params}"
         return candles
