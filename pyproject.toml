@@ -38,7 +38,7 @@ dev = [
 
 [tool.pdm.scripts]
 dashboard = "streamlit run src/quant/dashboard.py"
-
+mining = "python src/quant/data_miner.py"
 
 [tool.black]
 line-length = 110

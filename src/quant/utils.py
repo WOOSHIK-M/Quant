@@ -5,7 +5,6 @@ from typing import Any
 
 import jwt
 import requests
-
 from api_urls import UPBIT_OPEN_API_MARKET_URL
 
 

@@ -11,7 +11,13 @@ It uses [Upbit API](https://docs.upbit.com/docs).
 ```
 
 ### How to use?
-##### Use dashboard
-```bash
-pdm dashbaord
+
+we need 2 terminal seesions(like using tmux) to run this.
+
+```
+# In the 1st terminal
+pdm mining
+
+# and in the other terminal
+pdm dashboard
 ```
